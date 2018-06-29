@@ -1,6 +1,9 @@
 from tkinter import *
 import tkinter
+import pandas as pd
+from pandas import *
 
+'''
 def proces():
     number1=Entry.get(E1)
     number2=Entry.get(E2)
@@ -35,6 +38,18 @@ E4.grid(row=4,column=1)
 B=Button(top, text ="Submit",command = proces).grid(row=5,column=1,)
 
 top.mainloop()
+'''
+
+dfA = pd.read_excel('Amazon.xlsx')
+dfB = pd.read_excel('Wayfair.xlsx')
+
+NamesA = dfA['Product Name']
+NamesB = dfB['Product Name']
+
+print (NamesB[1])
+
+
+
 
 
 
