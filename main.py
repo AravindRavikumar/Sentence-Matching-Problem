@@ -3,6 +3,24 @@ import tkinter
 import pandas as pd
 from pandas import *
 
+dfResult = pd.DataFrame();
+
+def findSim(stringA,stringB,intA,intB):
+    try:
+        listA = set(stringA.split());
+        listB = set(stringB.split());
+    except:
+        #print('Float detected: ', stringA, '&&', stringB, ' \nAt', intA, ' and ', intB)
+        return
+    notinclude = {'and','is','of','for','set','Set'}
+    common = set.intersection(listA,listB)
+    common.difference(notinclude)
+    if len(common) > 3:
+        data = {'Index1': intA, 'Name1': stringA, 'Index2': intB, 'Name2': stringB, 'Common': len(common)}
+        temp = dfResult.append(data);
+        dfResult = temp;
+        #print('Line number : ',intA,' and ',intB,'\nThat is :-',stringA , ' &&& ', stringB)
+
 '''
 def proces():
     number1=Entry.get(E1)
@@ -40,13 +58,21 @@ B=Button(top, text ="Submit",command = proces).grid(row=5,column=1,)
 top.mainloop()
 '''
 
-dfA = pd.read_excel('Amazon.xlsx')
-dfB = pd.read_excel('Wayfair.xlsx')
+dfA = pd.read_excel('AmazonS.xlsx')
+dfB = pd.read_excel('WayfairS.xlsx')
 
 NamesA = dfA['Product Name']
 NamesB = dfB['Product Name']
 
-print (NamesB[1])
+#print(NamesA)
+#print(NamesB)
+
+print('Starting search :- ')
+
+for i in NamesA.index:
+    print(dfResult);
+    for j in NamesB.index:
+        findSim(NamesA[i],NamesB[j],i,j)
 
 
 
