@@ -3,22 +3,25 @@ import tkinter
 import pandas as pd
 from pandas import *
 
-dfResult = pd.DataFrame(columns=['Index1', 'Name1', 'Index2', 'Name2', 'Common'])
+dfResult = pd.DataFrame(columns=['Index1', 'Name1', 'Index2', 'Name2', 'Common', 'Similarity'])
 writer = pd.ExcelWriter('result.xlsx',engine= 'xlsxwriter')
 
 def findSim(stringA,stringB,intA,intB):
-    global dfResult;
+    global dfResult
     try:
         listA = set(stringA.split())
         listB = set(stringB.split())
     except:
         #print('Float detected: ', stringA, '&&', stringB, ' \nAt', intA, ' and ', intB)
         return
-    notinclude = {'and','is','of','for','set','Set'}
+    notinclude = {'and','is','of','for','set','Set','with'}
     common = set.intersection(listA,listB)
     common.difference(notinclude)
+    total = set.union(listA,listB)
+    total.difference(notinclude)
     if len(common) > 3:
-        data = {'Index1': intA, 'Name1': stringA, 'Index2': intB, 'Name2': stringB, 'Common': len(common)}
+        data = {'Index1': intA, 'Name1': stringA, 'Index2': intB, 'Name2': stringB, 'Common': len(common),
+                'Similarity': len(common)*100/len(total)}
         dfResult = dfResult.append(data,ignore_index = True)
         #print('Line number : ',intA,' and ',intB,'\nThat is :-',stringA , ' &&& ', stringB)
 
@@ -75,7 +78,7 @@ for i in NamesA.index:
         findSim(NamesA[i],NamesB[j],i,j)
 
 
-dfResult.sort_values(by='Common', ascending=False)
+dfResult.sort_values(by='Similarity', ascending=False)
 dfResult.to_excel(writer, sheet_name= 'Sheet 1')
 print(dfResult)
 writer.save()
