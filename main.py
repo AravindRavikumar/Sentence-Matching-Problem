@@ -1,12 +1,16 @@
 from tkinter import filedialog
 from tkinter import *
+import time
 import tkinter
 import pandas as pd
 from pandas import *
 
+#dataframe and writer
+
 dfResult = pd.DataFrame(columns=['Index1', 'Name1', 'Index2', 'Name2', 'Common', 'Similarity'])
 writer = pd.ExcelWriter('result.xlsx',engine= 'xlsxwriter')
 
+#Function that compares elements
 def findSim(stringA,stringB,intA,intB):
     global dfResult
 
@@ -23,61 +27,30 @@ def findSim(stringA,stringB,intA,intB):
     common.difference(notinclude)
     total = set.union(listA, listB)
     total.difference(notinclude)
-    if len(common) > 3:
+    if len(common)*100/len(total) > 10:
         data = {'Index1': intA, 'Name1': stringA, 'Index2': intB, 'Name2': stringB, 'Common': len(common),
                 'Similarity': len(common) * 100 / len(total)}
         dfResult = dfResult.append(data,ignore_index = True)
         #print('Line number : ',intA,' and ',intB,'\nThat is :-',stringA , ' &&& ', stringB)
 
-'''
-def proces():
-    number1=Entry.get(E1)
-    number2=Entry.get(E2)
-    operator=Entry.get(E3)  
-    number1=int(number1)
-    number2=int(number2)
-    if operator =="+":
-        answer=number1+number2
-    if operator =="-":
-        answer=number1-number2
-    if operator=="*":
-        answer=number1*number2
-    if operator=="/":
-        answer=number1/number2
-    Entry.insert(E4,0,answer)
-    print(answer)
-
-top = Tk()
-L1 = Label(top, text="My calculator",).grid(row=0,column=1)
-L2 = Label(top, text="Number 1",).grid(row=1,column=0)
-L3 = Label(top, text="Number 2",).grid(row=2,column=0)
-L4 = Label(top, text="Operator",).grid(row=3,column=0)
-L4 = Label(top, text="Answer",).grid(row=4,column=0)
-E1 = Entry(top, bd =5)
-E1.grid(row=1,column=1)
-E2 = Entry(top, bd =5)
-E2.grid(row=2,column=1)
-E3 = Entry(top, bd =5)
-E3.grid(row=3,column=1)
-E4 = Entry(top, bd =5)
-E4.grid(row=4,column=1)
-B=Button(top, text ="Submit",command = proces).grid(row=5,column=1,)
-
-top.mainloop()
-'''
+#Fucntion to open first file
 def browsefunc():
     filename = filedialog.askopenfile( title = "Select file 1")
-    pathlabel.config(text=filename.name)
+    pathlabel1.config(text=filename.name)
 
+#Function to open second file
 def browsefunc2():
     filename = filedialog.askopenfile( title = "Select file 1")
     pathlabel2.config(text=filename.name)
 
+#Function that opens files and calls the compare function
 def process():
 
-    print("Starting:   ",pathlabel.cget("text"),"  ",pathlabel2.cget("text"))
+    print("Starting:   ",pathlabel1.cget("text"),"  ",pathlabel2.cget("text"))
 
-    dfA = pd.read_excel(pathlabel.cget("text"))
+    start_time1 = time.time()
+
+    dfA = pd.read_excel(pathlabel1.cget("text"))
     dfB = pd.read_excel(pathlabel2.cget("text"))
 
     NamesA = dfA['Product Name']
@@ -88,33 +61,52 @@ def process():
 
     print('Starting search :- ')
 
+    global label
+
+    start_time = time.time()
+
+    label = tkinter.Label(root)
+    label.grid(row=7, column=1, padx=4, pady=4, sticky='ew')
+    label.config(width = 60, height = 3)
+
     for i in NamesA.index:
         print(i, '\n')
-        root.update()
-        label = tkinter.Label(root, text= "Currently done "+str(i)+" rows.\n")
-        label.grid(row=7, column=1, padx=4, pady=4, sticky='ew')
         for j in NamesB.index:
+            if int(time.time()-start_time)>0:
+                start_time = time.time()
+                root.update()
+                label = tkinter.Label(root, text="Currently done %d percentage.\nTime Taken till now = %d secs."
+                                                 "\n Further time required = %d secs" % (
+                    int(i * 100 / len(NamesA.index)), int(time.time() - start_time1), int((len(NamesA.index)-i)*(time.time() - start_time1)/i)))
+                label.grid(row=7, column=1, padx=4, pady=4, sticky='ew')
+                root.update()
             findSim(NamesA[i], NamesB[j], i, j)
 
-    dfResult.sort_values(by='Similarity', ascending=False)
+    print("Writing result :- \n")
+
+    dfResult.sort_values(by='Similarity', ascending=False, inplace= True)
     dfResult.to_excel(writer, sheet_name='Sheet 1')
     writer.save()
 
+#Main
+
 root = Tk()
 
-
+root.title("Sentence Matching Problem")
 
 browsebutton = Button(root, text="Browse", command=browsefunc)
 browsebutton.grid(row=0, column=0, padx=4, pady=4, sticky='ew')
 
-pathlabel = Label(root)
-pathlabel.grid(row=0, column=1, padx=4, pady=4, sticky='ew')
+pathlabel1 = Label(root)
+pathlabel1.grid(row=0, column=1, padx=4, pady=4, sticky='ew')
+pathlabel1.config(width = 60, height = 2)
 
 browsebutton2 = Button(root, text="Browse", command=browsefunc2)
 browsebutton2.grid(row=3, column=0, padx=4, pady=4, sticky='ew')
 
 pathlabel2 = Label(root)
 pathlabel2.grid(row=3, column=1, padx=4, pady=4, sticky='ew')
+pathlabel2.config(width = 60, height = 2)
 
 submit_button = Button(root, text="Start", command=process)
 submit_button.grid(row=5, column=1, padx=4, pady=4, sticky='ew')
